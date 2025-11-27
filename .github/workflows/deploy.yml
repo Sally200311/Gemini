@@ -9,49 +9,51 @@ permissions:
 
 jobs:
   build:
+    name: Build Project
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # Removed cache: 'npm' to avoid errors if lockfile is missing
+          # 移除 cache 設定以解決 "lock file not found" 錯誤
+          # 如果您之後提交了 package-lock.json，可以加回 cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Build
+      - name: Build App
         run: npm run build
         env:
+          # 注入 GitHub Secrets
           VITE_FINNHUB_API_KEY: ${{ secrets.VITE_FINNHUB_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
 
-      - name: Upload Artifacts
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-files
           path: dist
 
   deploy:
+    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout
+      # ⚠️ 重要：必須 Checkout 代碼，否則部署工具無法推送到 gh-pages 分支
+      - name: Checkout Code
         uses: actions/checkout@v4
-        
-      - name: Download Artifacts
+
+      - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
           name: dist-files
           path: dist
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
-          branch: gh-pages
