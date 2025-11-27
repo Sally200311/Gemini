@@ -8,55 +8,27 @@ permissions:
   contents: write
 
 jobs:
-  # Job 1: 打包程式碼
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout 🛎️
         uses: actions/checkout@v4
 
-      # 移除 cache: 'npm' 以避免 "lock file not found" 錯誤
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm install
-
-      # 這裡進行打包，並注入環境變數
-      - name: Build
-        run: npm run build
+      - name: Install and Build 🔧
+        # 移除 cache 設定以避免 lock file 錯誤
+        # 直接安裝並打包
+        run: |
+          npm install
+          npm run build
         env:
+          # 注入環境變數
           VITE_FINNHUB_API_KEY: ${{ secrets.VITE_FINNHUB_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
 
-      # 將打包好的 dist 資料夾上傳為 Artifact (暫存檔)
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-files
-          path: dist
-
-  # Job 2: 部署到 GitHub Pages (只有在 build 成功後才會執行)
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # 下載上一個 Job 打包好的檔案
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-files
-          path: dist
-
-      # 執行部署動作
-      - name: Deploy to GitHub Pages
+      - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist
+          folder: dist # Vite 打包後的產出資料夾
+          branch: gh-pages # 推送到這個分支
+          clean: true # 自動清除舊檔案
