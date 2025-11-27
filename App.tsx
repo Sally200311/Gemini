@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { APP_NAME, DEFAULT_SYMBOL } from './constants';
 import { MarketMode, CandleData, StockQuote, Asset, Transaction } from './types';
 import { fetchStockCandles, fetchQuote, isMockMode } from './services/api';
-import { getAssets, getTransactions, saveAsset, deleteAsset } from './services/storage';
+import { getAssets, getTransactions, deleteAsset } from './services/storage';
 
 // Components
 import StockChart from './components/StockChart';
@@ -21,7 +21,6 @@ const App: React.FC = () => {
   const [quote, setQuote] = useState<StockQuote | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState(DEFAULT_SYMBOL);
 
   // Initial Load
@@ -36,7 +35,7 @@ const App: React.FC = () => {
   };
 
   const loadMarketData = async (sym: string) => {
-    setLoading(true);
+    // Removed unused loading state
     try {
       const [candleData, quoteData] = await Promise.all([
         fetchStockCandles(sym, 'D', mode),
@@ -47,8 +46,6 @@ const App: React.FC = () => {
       setSymbol(sym);
     } catch (e) {
       console.error(e);
-    } finally {
-      setLoading(false);
     }
   };
 

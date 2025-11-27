@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Asset, CandleData, StockQuote } from '../types';
+import { CandleData, StockQuote } from '../types';
 import { analyzeStockWithGemini } from '../services/api';
 
 interface Props {

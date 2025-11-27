@@ -2,6 +2,9 @@ import { GoogleGenAI } from "@google/genai";
 import { CandleData, FinnhubCandles, MarketMode, StockQuote } from '../types';
 import { generateMockCandles } from '../constants';
 
+// Declare process to fix TS2580
+declare const process: any;
+
 // 檢查環境變數 (支援 Vite 和標準 process.env)
 const GEMINI_API_KEY = process.env.API_KEY || '';
 // @ts-ignore
@@ -145,7 +148,8 @@ export const analyzeStockWithGemini = async (symbol: string, quote: StockQuote, 
       contents: prompt,
     });
     
-    return response.text;
+    // Fix TS2322: handle undefined return
+    return response.text || "AI 分析暫時無法取得回應。";
   } catch (error) {
     console.error("Gemini Error:", error);
     return "AI 分析服務暫時無法使用，請稍後再試。";
