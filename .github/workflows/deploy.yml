@@ -8,7 +8,8 @@ permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  # Job 1: 打包程式碼
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,21 +20,43 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # 若無 package-lock.json，不啟用 cache 以免報錯
-          # cache: 'npm' 
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
 
+      # 這裡進行打包，並注入環境變數
       - name: Build
         run: npm run build
         env:
-          # 注入 GitHub Secrets 到環境變數
           VITE_FINNHUB_API_KEY: ${{ secrets.VITE_FINNHUB_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
 
-      - name: Deploy
+      # 將打包好的 dist 資料夾上傳為 Artifact (暫存檔)
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: dist
+
+  # Job 2: 部署到 GitHub Pages (只有在 build 成功後才會執行)
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 下載上一個 Job 打包好的檔案
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: dist
+
+      # 執行部署動作
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
-          branch: gh-pages
