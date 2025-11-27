@@ -1,5 +1,7 @@
+/// <reference types="node" />
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -9,6 +11,11 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     base: './', // 確保資源路徑為相對路徑，適應 GitHub Pages 子目錄結構
+    resolve: {
+      alias: {
+        '@': path.resolve(process.cwd(), '.'), // 設定 @ 對應到專案根目錄
+      },
+    },
     define: {
       // 關鍵設定：將編譯時的環境變數值注入到前端程式碼的 process.env.API_KEY 中
       // 這樣 services/api.ts 裡的 process.env.API_KEY 才能在部署後拿到值
