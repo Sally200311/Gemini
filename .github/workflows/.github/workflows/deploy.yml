@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ] # 或者是 master，看你的主分支叫什麼
+
+permissions:
+  contents: write # 允許 Action 推送程式碼到 gh-pages 分支
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 下載程式碼
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 設定 Node.js 環境
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 3. 安裝依賴
+      - name: Install dependencies
+        run: npm install
+
+      # 4. 打包建置 (Build)
+      # ⚠️ 關鍵：在這裡將 GitHub Secrets 注入到環境變數中
+      - name: Build
+        run: npm run build
+        env:
+          # 左邊是程式碼裡讀取的變數名，右邊是 GitHub Secrets
+          VITE_FINNHUB_API_KEY: ${{ secrets.VITE_FINNHUB_API_KEY }}
+          VITE_FIREBASE_CONFIG_STRING: ${{ secrets.VITE_FIREBASE_CONFIG_STRING }}
+          # 如果你的程式是用 process.env.API_KEY，Vite 建置時可能需要特殊處理
+          # 建議確保程式碼中讀取的是 import.meta.env.VITE_... 
+          # 這裡示範標準做法：
+          API_KEY: ${{ secrets.API_KEY }} 
+
+      # 5. 部署到 GitHub Pages
+      # 這會將 dist 資料夾的內容推送到 gh-pages 分支
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist # Vite 打包後的預設資料夾
