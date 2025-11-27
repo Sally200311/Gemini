@@ -1,0 +1,5 @@
+{
+  "name": "Gemini 智富管家",
+  "description": "具備模擬與真實交易雙模式的專業資產管理系統。整合 Gemini AI 進行市場分析，提供即時 K 線圖表、資產配置看板與即時報價功能。",
+  "requestFramePermissions": []
+}
